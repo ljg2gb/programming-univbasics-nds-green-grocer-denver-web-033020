@@ -32,8 +32,8 @@ def apply_coupons(cart, coupons)
   i = 0 
   while i < cart.length do
     item_name = cart[i][:item]
-    if find_item_by_name_in_collection(item_name, coupon),
-      
+    if find_item_by_name_in_collection(item_name, coupon)
+    end
   #CONTENT
   end
    i += 1 
