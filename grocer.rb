@@ -1,85 +1,91 @@
+require 'pry'
+
 def find_item_by_name_in_collection(name, collection)
-  # Implement me first!
-  #
-  # Consult README for inputs and outputs
   i = 0
   while i < collection.length do
-    if name === collection[i][:item]
+    if name == collection[i][:item]
       return collection[i]
-    else
-      return nil
     end
     i += 1
   end
 end
 
-def consolidate_cart(cart)
-  # Consult README for inputs and outputs
-  #
-  # REMEMBER: This returns a new Array that represents the cart. Don't merely
-  # change `cart` (i.e. mutate) it. It's easier to return a new thing.
-  array_w_count = []
-  i = 0 
-  while i < cart.length do
-    if array_w_count[i].has_value?()
-    
-end
 
-def apply_coupons(cart, coupons)
-  # Consult README for inputs and outputs
-  #
-  # REMEMBER: This method **should** update cart
+def consolidate_cart(cart)
+  new_cart = []
   i = 0 
   while i < cart.length do
     item_name = cart[i][:item]
-    if find_item_by_name_in_collection(item_name, coupon)
+    new_cart_item = find_item_by_name_in_collection(item_name, new_cart)
+   
+    if new_cart_item != nil
+      new_cart_item[:count] += 1
+      
+    else
+      new_cart_item = {
+        :item => cart[i][:item],
+        :price => cart[i][:price],
+        :clearance => cart[i][:clearance],
+        :count => 1 }
+        
+      new_cart << new_cart_item
     end
-  #CONTENT
+    i += 1
+    
   end
-   i += 1 
- 
+  new_cart 
+end
+
+def apply_coupons(cart, coupons)
+  i = 0 
+  while i < coupons.length do
+    cart_item = find_item_by_name_in_collection(coupons[i][:item], cart)
+    couponed_item = "#{coupons[i][:item]} W/COUPON"
+    cart_item_w_coupon = find_item_by_name_in_collection(couponed_item, cart)
+    if cart_item && cart_item[:count] >= coupons[i][:num]
+      if cart_item_w_coupon
+        cart_item_w_coupon[:count] += coupons[i][:num]
+        cart_item[:count] -= coupons[i][:num]
+      else
+        cart_item_w_coupon = {
+          :item => couponed_item,
+          :price => coupons[i][:cost] / coupons[i][:num],
+          :count => coupons[i][:num],
+          :clearance => cart_item[:clearance]
+        }
+        cart << cart_item_w_coupon
+        cart_item[:count] -= coupons[i][:num]
+      end
+    end
+    i += 1
+  end
+  cart
 end
 
 def apply_clearance(cart)
-  # Consult README for inputs and outputs
-  #
-  # REMEMBER: This method **should** update cart
   i = 0 
-  
   while i < cart.length do 
     if cart[i][:clearance]
-      cart[i][:price] = cart[i][:price] * 0.8
-    else
-      #do nothing if no clearance
+      cart[i][:price] = (cart[i][:price] - (cart[i][:price] * 0.20)).round(2)
     end
-     i += 0 
+    i += 1
+  end
+  cart
 end
 
 def checkout(cart, coupons)
-  # Consult README for inputs and outputs
-  #
-  # This method should call
-  # * consolidate_cart
-  # * apply_coupons
-  # * apply_clearance
-  #
-  # BEFORE it begins the work of calculating the total (or else you might have
-  # some irritated customers
-  apply_coupons(consolidated_cart, coupons)
-  apply_clearance(cart)
-  
-  consolidated_cart = consolidated_cart(cart)
-  coupons_applied_to_consolidated = apply_coupons(consolidated_cart, coupons)
-  clearance_and_coupons_applied = apply_clearance(coupons_applied_to_consolidated)
-  
-  total = 0.0
+  consolidated_cart = consolidate_cart(cart)
+  couponed_cart = apply_coupons(consolidated_cart, coupons)
+  clearance_and_coupons_applied = apply_clearance(couponed_cart)
+  total = 0
   i = 0 
   
   while i < clearance_and_coupons_applied.length do
-    price_of_item = clearance_and_coupons_applied[i][:price]
-    float_price = price_of_item.to_f
-    total += float_price
+    total += clearance_and_coupons_applied[i][:price] * clearance_and_coupons_applied[i][:count]
+    i += 1
   end
-  i += 1
+  if total > 100
+    total -= (total * 0.10)
+  end
+  total
 end
-
